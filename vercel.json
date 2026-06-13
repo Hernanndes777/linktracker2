@@ -6,6 +6,7 @@
     { "source": "/api/create",  "destination": "/api/create" },
     { "source": "/api/event",   "destination": "/api/event" },
     { "source": "/api/daily",   "destination": "/api/daily" },
+    { "source": "/api/delete",  "destination": "/api/delete" },
     { "source": "/(.*)",        "destination": "/api/dashboard" }
   ]
 }
