@@ -451,17 +451,17 @@ async function loadLinks() {
       const conv = Number(l.conversion_rate||0);
       const barW = Math.min(conv*2,100);
       const criado = new Date(l.created_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
-      return \`<tr>
+      return \`<tr data-slug="\${l.slug}">
         <td><span class="slug-cell">/t/\${l.slug}</span></td>
         <td><span class="dest-cell" title="\${l.destination}">\${l.destination}</span></td>
         <td>\${l.campaign?\`<span class="tag">\${l.campaign}</span>\`:'<span style="color:var(--muted)">—</span>'}</td>
         <td>\${l.adset?\`<span class="tag">\${l.adset}</span>\`:'<span style="color:var(--muted)">—</span>'}</td>
-        <td><span class="num green">\${Number(l.pageviews).toLocaleString('pt-BR')}</span></td>
-        <td><span class="num blue">\${Number(l.whatsapp_clicks).toLocaleString('pt-BR')}</span></td>
+        <td><span class="num green pv-num">\${Number(l.pageviews).toLocaleString('pt-BR')}</span></td>
+        <td><span class="num blue wa-num">\${Number(l.whatsapp_clicks).toLocaleString('pt-BR')}</span></td>
         <td>
           <div class="conv-bar">
             <div class="bar-bg"><div class="bar-fill" style="width:\${barW}%"></div></div>
-            <span class="num" style="min-width:34px;color:var(--danger)">\${conv}%</span>
+            <span class="num cv-num" style="min-width:34px;color:var(--danger)">\${conv}%</span>
           </div>
         </td>
         <td><span class="date-cell">\${criado}</span></td>
@@ -604,8 +604,38 @@ document.getElementById('dateFrom').value = todayStr;
 document.getElementById('dateTo').value   = todayStr;
 loadAll();
 
-// Auto-refresh a cada 30s
-setInterval(() => { loadLinks(); loadChart(); }, 30000);
+// Auto-refresh a cada 60s — só atualiza números, sem re-renderizar tabela
+setInterval(() => { refreshNumbers(); loadChart(); }, 60000);
+
+async function refreshNumbers() {
+  try {
+    const res = await fetch('/api/links'+dateParams());
+    if (!res.ok) return;
+    const links = await res.json();
+    const totalPV = links.reduce((a,l)=>a+Number(l.pageviews||0),0);
+    const totalWA = links.reduce((a,l)=>a+Number(l.whatsapp_clicks||0),0);
+    document.getElementById('statLinks').textContent      = links.length;
+    document.getElementById('statPageviews').textContent  = totalPV.toLocaleString('pt-BR');
+    document.getElementById('statWA').textContent         = totalWA.toLocaleString('pt-BR');
+    // Atualiza só os números em cada linha sem re-renderizar
+    links.forEach(l => {
+      const row = document.querySelector(\`[data-slug="\${l.slug}"]\`);
+      if (!row) return;
+      const pv   = Number(l.pageviews||0);
+      const wa   = Number(l.whatsapp_clicks||0);
+      const conv = Number(l.conversion_rate||0);
+      const barW = Math.min(conv*2,100);
+      const pvEl = row.querySelector('.pv-num');
+      const waEl = row.querySelector('.wa-num');
+      const cvEl = row.querySelector('.cv-num');
+      const barEl= row.querySelector('.bar-fill');
+      if (pvEl) pvEl.textContent = pv.toLocaleString('pt-BR');
+      if (waEl) waEl.textContent = wa.toLocaleString('pt-BR');
+      if (cvEl) cvEl.textContent = conv+'%';
+      if (barEl) barEl.style.width = barW+'%';
+    });
+  } catch(e) { console.error(e); }
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </body>
