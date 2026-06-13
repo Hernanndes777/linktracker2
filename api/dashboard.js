@@ -569,13 +569,15 @@ function confirmDelete(slug) {
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); slugToDelete=null; }
 async function doDelete() {
   if (!slugToDelete) return;
+  const slug = slugToDelete;
   closeModal();
   try {
-    const res = await fetch('/api/delete?slug='+slugToDelete, {method:'DELETE'});
-    if (!res.ok) throw new Error('Erro ao deletar');
+    const res = await fetch('/api/delete?slug='+slug, {method:'DELETE'});
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(data.error||'Erro ao deletar');
     showToast('Link deletado','ok');
-    loadAll();
   } catch(e) { showToast(e.message,'err'); }
+  finally { loadAll(); }
 }
 document.getElementById('modalOverlay').addEventListener('click', e => {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
@@ -601,6 +603,9 @@ currentFrom = todayStr; currentTo = todayStr;
 document.getElementById('dateFrom').value = todayStr;
 document.getElementById('dateTo').value   = todayStr;
 loadAll();
+
+// Auto-refresh a cada 30s
+setInterval(() => { loadLinks(); loadChart(); }, 30000);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </body>
