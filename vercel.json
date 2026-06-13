@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/t/:slug", "destination": "/api/track" },
+    { "source": "/api/links", "destination": "/api/links" },
+    { "source": "/api/stats", "destination": "/api/stats" },
+    { "source": "/api/create", "destination": "/api/create" },
+    { "source": "/(.*)", "destination": "/api/dashboard" }
+  ]
+}

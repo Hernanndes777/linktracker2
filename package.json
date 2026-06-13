@@ -1,0 +1,12 @@
+{
+  "name": "linktracker2",
+  "version": "1.0.0",
+  "description": "Link tracker independente do pixel Meta",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.0",
+    "nanoid": "^3.3.7"
+  }
+}
